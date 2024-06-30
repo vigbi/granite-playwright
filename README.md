@@ -7,9 +7,8 @@ You can learn how to automate the QA work on this project using Playwright by fo
 
 ## Setup
 
-1. Clone the repository to your local machine.
-
-2. If you don't have Ruby, Rails or NodeJS setup in your local machine, follow instructions on these links to install Ruby, Rails, Node and all the dependencies required for this project to work:
+1. Clone the re
+by, Rails, Node and all the dependencies required for this project to work:
 
     - https://courses.bigbinaryacademy.com/learn-rubyonrails/setting-up-workspace
     - https://courses.bigbinaryacademy.com/learn-rubyonrails/installing-ruby-on-rails/
