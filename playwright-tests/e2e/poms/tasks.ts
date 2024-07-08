@@ -10,6 +10,10 @@ interface CreateNewTaskProps extends TaskName {
   userName?: string;
 }
 
+interface CommentProps extends TaskName {
+  commentText: string;
+}
+
 export class TaskPage {
   page: Page;
 
@@ -35,8 +39,6 @@ export class TaskPage {
     await taskInDashboard.scrollIntoViewIfNeeded();
     await expect(taskInDashboard).toBeVisible();
   };
-
-  // poms/tasks.ts (line no: 37)
 
   markTaskAsCompletedAndVerify = async ({ taskName }: TaskName) => {
     await expect(
@@ -70,4 +72,53 @@ export class TaskPage {
       this.page.getByTestId("tasks-pending-table").getByRole("row").nth(1)
     ).toContainText(taskName);
   };
+
+  addCommentAndVerify = async ({
+    taskName,
+    commentText,
+  }: CommentProps) => {
+    await this.page.getByTestId("tasks-pending-table").getByRole("row", {
+      name: taskName,
+    }).getByText(taskName).click();
+
+    await this.page.getByTestId("comments-text-field").fill(commentText);
+    await this.page.getByTestId("comments-submit-button").click();
+
+    await expect(this.page.getByText(commentText)).toBeVisible();
+  };
+
+  createTask = async ({
+    taskName,
+    userName = "Oliver Smith",
+  }: CreateNewTaskProps) => {
+    await this.page.getByTestId("navbar-add-todo-link").click();
+    await this.page.getByTestId("form-title-field").fill(taskName);
+
+    await this.page.locator(".css-2b097c-container").click();
+    await this.page.locator(".css-26l3qy-menu").getByText(userName).click();
+    await this.page.getByTestId("form-submit-button").click();
+
+  };
+
+  verifyComment = async ({
+    taskName,
+    commentText,
+  }: CommentProps) => {
+    await this.page.getByTestId("tasks-pending-table").getByRole("row", {
+      name: taskName,
+    }).getByText(new RegExp(`^${taskName}$`, 'i')).click();
+
+    await expect(this.page.getByText(commentText)).toBeVisible();
+  };
+
+  addCommentAndVerifyAsignee = async ({
+    taskName,
+    commentText,
+  }: CommentProps) => {
+    await this.page.getByTestId("comments-text-field").fill(commentText);
+    await this.page.getByTestId("comments-submit-button").click();
+
+    await expect(this.page.getByText(commentText)).toBeVisible();
+  };
+
 }

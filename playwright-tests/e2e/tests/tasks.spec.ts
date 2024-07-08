@@ -2,13 +2,15 @@ import { test } from "../fixtures";
 import { expect } from "@playwright/test";
 import { faker } from "@faker-js/faker";
 import LoginPage from "../poms/login";
+import { TaskPage } from "../poms/tasks";
 
 test.describe("Tasks page", () => {
   let taskName: string;
+  let commentText: string;
 
   test.beforeEach(async ({ page, taskPage }, testInfo) => {
     taskName = faker.word.words({ count: 5 });
-
+    commentText = faker.lorem.sentence();
     if (testInfo.title.includes("[SKIP_SETUP]")) return;
 
     await page.goto("/");
@@ -37,6 +39,42 @@ test.describe("Tasks page", () => {
   test("should be able to mark a task as completed", async ({ taskPage }) => {
     await taskPage.markTaskAsCompletedAndVerify({ taskName });
   });
+
+
+
+  test.describe("Comments feature", () => {
+    test.only("should add and verify comment as creator [SKIP_SETUP]", async ({ page, browser, taskPage }) => {
+      await page.goto("/");
+
+      await taskPage.createTask({ taskName, userName: "Sam Smith" });
+      await taskPage.addCommentAndVerify({ taskName, commentText });
+
+      // Creating a new browser context and a page in the browser without restoring the session
+      const newUserContext = await browser.newContext({
+        storageState: { cookies: [], origins: [] },
+      });
+      const newUserPage = await newUserContext.newPage();
+
+      // Initializing the login POM here because the fixture is configured to use the default page context
+      const loginPage = new LoginPage(newUserPage);
+
+      await newUserPage.goto("/");
+      await loginPage.loginAndVerifyUser({
+        email: "sam@example.com",
+        password: "welcome",
+        username: "Sam Smith",
+      });
+
+      const newUserTaskPage = new TaskPage(newUserPage);
+      await newUserTaskPage.verifyComment({ taskName, commentText });
+      commentText = faker.lorem.sentence();
+      await newUserTaskPage.addCommentAndVerifyAsignee({ taskName, commentText });
+
+      await newUserPage.close();
+      await newUserContext.close();
+    });
+  });
+
 
   test.describe("Starring tasks feature", () => {
     test.describe.configure({ mode: "serial" });
